@@ -1,10 +1,16 @@
 import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { DashboardClient } from "@/components/dashboard/dashboard-client";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
+
+  if (!session) {
+    redirect("/login");
+  }
+
   const userId = (session?.user as any)?.id;
 
   const trackers = await prisma.tracker.findMany({

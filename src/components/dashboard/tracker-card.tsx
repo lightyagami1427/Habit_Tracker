@@ -11,12 +11,28 @@ interface TrackerData {
   name: string;
   description: string | null;
   frequencyType: string;
+  daysOfWeek: number[];
   targetCount: number;
   color: string;
   streak: number;
   completedToday: boolean;
   totalLogs: number;
 }
+
+const getScheduleLabel = (type: string, days: number[]) => {
+  if (type === "daily") return "Everyday";
+  if (!days || days.length === 0) return "Daily";
+  if (days.length === 7) return "Everyday";
+  
+  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  
+  if (days.length === 5 && !days.includes(0) && !days.includes(6)) return "Weekdays";
+  if (days.length === 2 && days.includes(0) && days.includes(6)) return "Weekends";
+  
+  return days.sort((a, b) => (a === 0 ? 7 : a) - (b === 0 ? 7 : b))
+    .map(d => dayNames[d])
+    .join(", ");
+};
 
 export function TrackerCard({ tracker }: { tracker: TrackerData }) {
   const router = useRouter();
@@ -118,7 +134,9 @@ export function TrackerCard({ tracker }: { tracker: TrackerData }) {
         </div>
 
         <div className="flex items-center gap-4 text-xs text-muted-foreground mb-4">
-          <span className="capitalize px-2 py-0.5 rounded-md bg-secondary">{tracker.frequencyType}</span>
+          <span className="capitalize px-2 py-0.5 rounded-md bg-secondary">
+            {getScheduleLabel(tracker.frequencyType, tracker.daysOfWeek)}
+          </span>
           <span className="flex items-center gap-1"><Flame className="w-3 h-3 text-orange-500" />{tracker.streak} streak</span>
         </div>
 

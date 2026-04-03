@@ -13,6 +13,7 @@ interface TrackerData {
   name: string;
   description: string | null;
   frequencyType: string;
+  daysOfWeek: number[];
   targetCount: number;
   color: string;
   createdAt: string;

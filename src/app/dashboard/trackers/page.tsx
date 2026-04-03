@@ -23,6 +23,7 @@ export default async function TrackersPage() {
     }
     return {
       id: t.id, name: t.name, description: t.description, frequencyType: t.frequencyType,
+      daysOfWeek: t.daysOfWeek || [],
       targetCount: t.targetCount, color: t.color, createdAt: t.createdAt.toISOString(),
       streak, totalCompleted: completedLogs.length, totalLogs: t.logs.length,
     };

@@ -23,14 +23,22 @@ export async function POST(req: Request) {
   const userId = (session.user as any).id;
 
   const body = await req.json();
-  const { name, description, frequencyType, targetCount, color } = body;
+  const { name, description, frequencyType, targetCount, color, daysOfWeek } = body;
 
   if (!name?.trim()) {
     return NextResponse.json({ error: "Name is required" }, { status: 400 });
   }
 
   const tracker = await prisma.tracker.create({
-    data: { userId, name: name.trim(), description: description || null, frequencyType: frequencyType || "daily", targetCount: targetCount || 1, color: color || "#6366f1" },
+    data: { 
+      userId, 
+      name: name.trim(), 
+      description: description || null, 
+      frequencyType: frequencyType || "daily", 
+      targetCount: targetCount || 1, 
+      color: color || "#6366f1",
+      daysOfWeek: daysOfWeek || []
+    },
   });
 
   return NextResponse.json(tracker, { status: 201 });

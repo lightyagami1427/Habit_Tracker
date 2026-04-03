@@ -19,13 +19,22 @@ export default async function DashboardPage() {
     orderBy: { createdAt: "desc" },
   });
 
-  const totalHabits = trackers.length;
-
   const now = new Date();
+  const currentDay = now.getDay();
   const todayStr = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
 
+  const filteredTrackers = trackers.filter((t: any) => {
+    if (t.frequencyType === "daily") return true;
+    if (t.frequencyType === "specific" && t.daysOfWeek?.includes(currentDay)) return true;
+    // Fallback for old data or other types
+    if (!t.frequencyType || t.frequencyType === "weekly" || t.frequencyType === "custom") return true;
+    return false;
+  });
+
+  const totalHabitsToday = filteredTrackers.length;
   let totalCompletedToday = 0;
-  const trackerData = trackers.map((t: any) => {
+
+  const trackerData = filteredTrackers.map((t: any) => {
     const logs = t.logs;
     const hasCompletedToday = logs.some((l: any) => new Date(l.date).setHours(0,0,0,0) === todayStr && l.status === "completed");
     
@@ -43,6 +52,7 @@ export default async function DashboardPage() {
       name: t.name,
       description: t.description,
       frequencyType: t.frequencyType,
+      daysOfWeek: t.daysOfWeek || [],
       targetCount: t.targetCount,
       color: t.color,
       createdAt: t.createdAt.toISOString(),
@@ -52,13 +62,13 @@ export default async function DashboardPage() {
     };
   });
 
-  const completionRate = totalHabits > 0 ? Math.round((totalCompletedToday / totalHabits) * 100) : 0;
+  const completionRate = totalHabitsToday > 0 ? Math.round((totalCompletedToday / totalHabitsToday) * 100) : 0;
   const longestStreak = trackerData.reduce((max: number, t: any) => Math.max(max, t.streak), 0);
 
   return (
     <DashboardClient
       trackers={trackerData}
-      stats={{ totalHabits, completedToday: totalCompletedToday, completionRate, longestStreak }}
+      stats={{ totalHabits: totalHabitsToday, completedToday: totalCompletedToday, completionRate, longestStreak }}
     />
   );
 }

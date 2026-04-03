@@ -9,6 +9,7 @@ import { CreateTrackerModal } from "@/components/dashboard/create-tracker-modal"
 
 interface Tracker {
   id: string; name: string; description: string | null; frequencyType: string;
+  daysOfWeek: number[];
   targetCount: number; color: string; createdAt: string;
   streak: number; totalCompleted: number; totalLogs: number;
 }

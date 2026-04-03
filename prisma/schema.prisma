@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  password  String
+  name      String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  trackers  Tracker[]
+  plans     Plan[]
+}
+
+model Tracker {
+  id            String   @id @default(cuid())
+  userId        String
+  name          String
+  description   String?
+  frequencyType String   @default("daily") // daily, weekly, custom
+  targetCount   Int      @default(1)
+  color         String   @default("#6366f1")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  logs          Log[]
+
+  @@index([userId])
+}
+
+model Log {
+  id        String   @id @default(cuid())
+  trackerId String
+  date      DateTime
+  status    String   @default("completed") // completed, skipped, missed
+  note      String?
+  createdAt DateTime @default(now())
+  tracker   Tracker  @relation(fields: [trackerId], references: [id], onDelete: Cascade)
+
+  @@unique([trackerId, date])
+  @@index([trackerId])
+  @@index([date])
+}
+
+model Plan {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  config    Json     // { "monday": ["Gym", "Read"], "tuesday": ["Study"] }
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}

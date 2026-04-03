@@ -19,6 +19,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       name: body.name ?? tracker.name,
       description: body.description ?? tracker.description,
       frequencyType: body.frequencyType ?? tracker.frequencyType,
+      daysOfWeek: body.daysOfWeek ?? tracker.daysOfWeek,
       targetCount: body.targetCount ?? tracker.targetCount,
       color: body.color ?? tracker.color,
     },

@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useState } from "react";
+import { EditTrackerModal } from "./edit-tracker-modal";
 
 interface TrackerData {
   id: string;
@@ -40,6 +41,7 @@ export function TrackerCard({ tracker }: { tracker: TrackerData }) {
   const [deleting, setDeleting] = useState(false);
   const [isCompleted, setIsCompleted] = useState(tracker.completedToday);
   const [isToggling, setIsToggling] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
 
   const handleDelete = async () => {
     setDeleting(true);
@@ -115,7 +117,7 @@ export function TrackerCard({ tracker }: { tracker: TrackerData }) {
                 <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
                 <div className="absolute right-0 top-8 z-20 w-36 rounded-xl border bg-card shadow-lg p-1">
                   <button
-                    onClick={() => { setMenuOpen(false); router.push(`/dashboard/trackers/${tracker.id}/edit`); }}
+                    onClick={() => { setMenuOpen(false); setEditOpen(true); }}
                     className="flex items-center gap-2 w-full px-3 py-2 text-sm rounded-lg hover:bg-secondary"
                   >
                     <Pencil className="w-3.5 h-3.5" /> Edit
@@ -153,6 +155,11 @@ export function TrackerCard({ tracker }: { tracker: TrackerData }) {
           {isCompleted ? "Completed" : "Mark Complete"}
         </button>
       </CardContent>
+      <EditTrackerModal 
+        tracker={tracker} 
+        open={editOpen} 
+        onOpenChange={setEditOpen} 
+      />
     </Card>
   );
 }

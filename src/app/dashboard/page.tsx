@@ -15,23 +15,19 @@ export default async function DashboardPage() {
 
   const totalHabits = trackers.length;
 
-  // Calculate streaks and completions
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const now = new Date();
+  const todayStr = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
 
   let totalCompletedToday = 0;
-  const trackerData = trackers.map((t) => {
-    const todayLog = t.logs.find((l) => {
-      const logDate = new Date(l.date);
-      logDate.setHours(0, 0, 0, 0);
-      return logDate.getTime() === today.getTime();
-    });
-    if (todayLog?.status === "completed") totalCompletedToday++;
+  const trackerData = trackers.map((t: any) => {
+    const logs = t.logs;
+    const hasCompletedToday = logs.some((l: any) => new Date(l.date).setHours(0,0,0,0) === todayStr && l.status === "completed");
+    
+    if (hasCompletedToday) totalCompletedToday++;
 
-    // Calculate streak
+    // Fast streak calculation from pre-sorted logs
     let streak = 0;
-    const sortedLogs = [...t.logs].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    for (const log of sortedLogs) {
+    for (const log of logs) {
       if (log.status === "completed") streak++;
       else break;
     }
@@ -45,13 +41,13 @@ export default async function DashboardPage() {
       color: t.color,
       createdAt: t.createdAt.toISOString(),
       streak,
-      completedToday: todayLog?.status === "completed",
-      totalLogs: t.logs.filter((l) => l.status === "completed").length,
+      completedToday: hasCompletedToday,
+      totalLogs: logs.filter((l: any) => l.status === "completed").length,
     };
   });
 
   const completionRate = totalHabits > 0 ? Math.round((totalCompletedToday / totalHabits) * 100) : 0;
-  const longestStreak = trackerData.length > 0 ? Math.max(...trackerData.map((t) => t.streak)) : 0;
+  const longestStreak = trackerData.reduce((max: number, t: any) => Math.max(max, t.streak), 0);
 
   return (
     <DashboardClient

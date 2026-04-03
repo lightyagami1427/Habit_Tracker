@@ -22,6 +22,8 @@ export function TrackerCard({ tracker }: { tracker: TrackerData }) {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(tracker.completedToday);
+  const [isToggling, setIsToggling] = useState(false);
 
   const handleDelete = async () => {
     setDeleting(true);
@@ -41,6 +43,13 @@ export function TrackerCard({ tracker }: { tracker: TrackerData }) {
   };
 
   const handleToggle = async () => {
+    if (isToggling) return;
+    
+    // Optimistic Update
+    const previousState = isCompleted;
+    setIsCompleted(!previousState);
+    setIsToggling(true);
+
     try {
       const res = await fetch("/api/logs", {
         method: "POST",
@@ -48,15 +57,22 @@ export function TrackerCard({ tracker }: { tracker: TrackerData }) {
         body: JSON.stringify({
           trackerId: tracker.id,
           date: new Date().toISOString(),
-          status: tracker.completedToday ? "missed" : "completed",
+          status: previousState ? "missed" : "completed",
         }),
       });
+      
       if (res.ok) {
         router.refresh();
-        toast.success(tracker.completedToday ? "Marked incomplete" : "Marked complete! 🎉");
+        toast.success(!previousState ? "Marked complete! 🎉" : "Marked incomplete");
+      } else {
+        setIsCompleted(previousState);
+        toast.error("Failed to update");
       }
     } catch {
+      setIsCompleted(previousState);
       toast.error("Failed to update");
+    } finally {
+      setIsToggling(false);
     }
   };
 
@@ -108,14 +124,15 @@ export function TrackerCard({ tracker }: { tracker: TrackerData }) {
 
         <button
           onClick={handleToggle}
+          disabled={isToggling}
           className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-            tracker.completedToday
+            isCompleted
               ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
               : "bg-secondary hover:bg-secondary/80 border border-border/50"
           }`}
         >
-          <CheckCircle2 className={`w-4 h-4 ${tracker.completedToday ? "fill-emerald-500" : ""}`} />
-          {tracker.completedToday ? "Completed" : "Mark Complete"}
+          <CheckCircle2 className={`w-4 h-4 ${isCompleted ? "fill-emerald-500" : ""}`} />
+          {isCompleted ? "Completed" : "Mark Complete"}
         </button>
       </CardContent>
     </Card>
